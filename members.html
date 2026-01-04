@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الأعضاء - MZJ Workspace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/shared.css">
+    <style>
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .page-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--brown);
+        }
+        
+        .members-container {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(62, 36, 32, 0.08);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: var(--brown);
+            color: var(--cream);
+        }
+        
+        th {
+            padding: 16px;
+            text-align: right;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+        
+        tbody tr {
+            transition: background 0.2s ease;
+        }
+        
+        tbody tr:hover {
+            background: rgba(188, 143, 116, 0.05);
+        }
+        
+        .user-avatar-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-avatar-small {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .role-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .role-badge.admin {
+            background: rgba(62, 36, 32, 0.1);
+            color: var(--brown);
+        }
+        
+        .role-badge.member {
+            background: rgba(188, 143, 116, 0.1);
+            color: var(--beige);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .status-badge.active {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4caf50;
+        }
+        
+        .status-badge.inactive {
+            background: rgba(244, 67, 54, 0.1);
+            color: #f44336;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-left: 6px;
+        }
+        
+        .action-btn.edit {
+            background: var(--beige);
+            color: white;
+        }
+        
+        .action-btn.edit:hover {
+            background: #a67d62;
+        }
+        
+        .action-btn.toggle {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .action-btn.toggle:hover {
+            background: #f57c00;
+        }
+        
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .color-input {
+            width: 60px;
+            height: 40px;
+            border: 2px solid #e0d4c8;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        
+        .empty-state-text {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--brown);
+            margin-bottom: 24px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: var(--brown);
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e0d4c8;
+            border-radius: 8px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--beige);
+            box-shadow: 0 0 0 3px rgba(188, 143, 116, 0.1);
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .modal-btn.primary {
+            background: var(--brown);
+            color: var(--cream);
+        }
+        
+        .modal-btn.primary:hover {
+            background: #2a1814;
+        }
+        
+        .modal-btn.secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .modal-btn.secondary:hover {
+            background: #d0d0d0;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 248, 239, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--beige);
+            border-top-color: var(--brown);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: var(--brown);
+            color: var(--cream);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        
+        .info-note {
+            background: rgba(33, 150, 243, 0.1);
+            border-right: 4px solid #2196f3;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #1976d2;
+        }
+        
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 24px;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .table-container {
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="topbar-right">
+            <button class="menu-toggle" id="menuToggle">☰</button>
+            <h1 class="topbar-title">MZJ Workspace</h1>
+        </div>
+        <div class="topbar-left">
+            <div class="user-info" id="userInfo">
+                <div class="user-avatar" id="userAvatar"></div>
+                <span class="user-name" id="userName"></span>
+            </div>
+            <button class="logout-btn" id="logoutBtn">تسجيل الخروج</button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <nav class="sidebar-menu">
+            <a href="dashboard.html" class="menu-item">
+                <span class="menu-icon">📊</span>
+                <span>لوحة التحكم</span>
+            </a>
+            <a href="projects.html" class="menu-item">
+                <span class="menu-icon">📋</span>
+                <span>المشاريع</span>
+            </a>
+            <a href="cars.html" class="menu-item">
+                <span class="menu-icon">🚗</span>
+                <span>السيارات</span>
+            </a>
+            <a href="media.html" class="menu-item">
+                <span class="menu-icon">📸</span>
+                <span>الميديا والتصوير</span>
+            </a>
+            <a href="members.html" class="menu-item active">
+                <span class="menu-icon">👥</span>
+                <span>إدارة الأعضاء</span>
+            </a>
+            <a href="admin.html" class="menu-item">
+                <span class="menu-icon">📢</span>
+                <span>الحملات</span>
+            </a>
+            <a href="whiteboard.html" class="menu-item">
+                <span class="menu-icon">🎨</span>
+                <span>الوايت بورد</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">إدارة الأعضاء</h1>
+            <button class="btn btn-primary" id="addMemberBtn">
+                إضافة عضو جديد
+            </button>
+        </div>
+
+        <div class="members-container">
+            <div class="info-note">
+                ملاحظة: لإنشاء حسابات جديدة في Firebase Authentication، يجب استخدام Firebase Admin SDK أو Firebase Console. هذه الواجهة تتيح إدارة بيانات المستخدمين في Firestore فقط.
+            </div>
+
+            <div class="table-container">
+                <table id="membersTable">
+                    <thead>
+                        <tr>
+                            <th>العضو</th>
+                            <th>البريد الإلكتروني</th>
+                            <th>الدور</th>
+                            <th>اللون</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="membersBody">
+                        <!-- سيتم ملؤها ديناميكياً -->
+                    </tbody>
+                </table>
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <div class="empty-state-icon">👥</div>
+                    <div class="empty-state-text">لا يوجد أعضاء</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal لإضافة عضو -->
+    <div class="modal" id="addMemberModal">
+        <div class="modal-content">
+            <h2 class="modal-header">إضافة عضو جديد</h2>
+            <div class="info-note">
+                يجب إنشاء الحساب أولاً في Firebase Console، ثم إضافة بياناته هنا.
+            </div>
+            <form id="addMemberForm">
+                <div class="form-group">
+                    <label for="memberUid">UID من Firebase</label>
+                    <input type="text" id="memberUid" required placeholder="الـ UID من Firebase Authentication">
+                </div>
+                
+                <div class="form-group">
+                    <label for="memberName">الاسم</label>
+                    <input type="text" id="memberName" required placeholder="أدخل الاسم الكامل">
+                </div>
+                
+                <div class="form-group">
+                    <label for="memberEmail">البريد الإلكتروني</label>
+                    <input type="email" id="memberEmail" required placeholder="example@mzjcars.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="memberRole">الدور</label>
+                    <select id="memberRole" required>
+                        <option value="member">Member</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="memberColor">اللون</label>
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="memberColor" class="color-input" value="#bc8f74">
+                        <span id="colorValue">#bc8f74</span>
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="submit" class="modal-btn primary">حفظ</button>
+                    <button type="button" class="modal-btn secondary" id="cancelAddBtn">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal لتعديل عضو -->
+    <div class="modal" id="editMemberModal">
+        <div class="modal-content">
+            <h2 class="modal-header">تعديل بيانات العضو</h2>
+            <form id="editMemberForm">
+                <div class="form-group">
+                    <label for="editMemberName">الاسم</label>
+                    <input type="text" id="editMemberName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editMemberRole">الدور</label>
+                    <select id="editMemberRole" required>
+                        <option value="member">Member</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editMemberColor">اللون</label>
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="editMemberColor" class="color-input">
+                        <span id="editColorValue"></span>
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="submit" class="modal-btn primary">حفظ التعديلات</button>
+                    <button type="button" class="modal-btn secondary" id="cancelEditBtn">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { firebaseConfig } from './scripts/firebase-config.js';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let allMembers = [];
+        let editingMemberId = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                
+                if (!userDoc.exists() || !userDoc.data().active) {
+                    await signOut(auth);
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const userData = userDoc.data();
+                currentUser = { user, userData };
+
+                // التحقق من صلاحية Admin
+                if (userData.role !== 'admin') {
+                    window.location.href = 'projects.html';
+                    return;
+                }
+
+                // عرض معلومات المستخدم
+                document.getElementById('userName').textContent = userData.name;
+                document.getElementById('userAvatar').textContent = userData.name.charAt(0);
+                document.getElementById('userAvatar').style.background = userData.color || '#bc8f74';
+
+                await loadMembers();
+                document.getElementById('loadingOverlay').style.display = 'none';
+
+            } catch (error) {
+                console.error('خطأ في التحقق من المستخدم:', error);
+                window.location.href = 'login.html';
+            }
+        });
+
+        async function loadMembers() {
+            try {
+                const membersSnap = await getDocs(collection(db, 'users'));
+                allMembers = membersSnap.docs.map(doc => ({
+                    uid: doc.id,
+                    ...doc.data()
+                }));
+
+                renderMembers();
+            } catch (error) {
+                console.error('خطأ في تحميل الأعضاء:', error);
+            }
+        }
+
+        function renderMembers() {
+            const tbody = document.getElementById('membersBody');
+            const emptyState = document.getElementById('emptyState');
+
+            if (allMembers.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+
+            tbody.innerHTML = allMembers.map(member => {
+                const isCurrentUser = member.uid === currentUser.user.uid;
+
+                return `
+                    <tr>
+                        <td>
+                            <div class="user-avatar-cell">
+                                <div class="user-avatar-small" style="background: ${member.color}">
+                                    ${member.name.charAt(0)}
+                                </div>
+                                <strong>${member.name}</strong>
+                            </div>
+                        </td>
+                        <td>${member.email}</td>
+                        <td>
+                            <span class="role-badge ${member.role}">
+                                ${member.role === 'admin' ? 'Admin' : 'Member'}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 24px; height: 24px; border-radius: 4px; background: ${member.color}; border: 2px solid #e0d4c8;"></div>
+                                <span style="font-size: 12px; color: #666;">${member.color}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge ${member.active ? 'active' : 'inactive'}">
+                                ${member.active ? 'نشط' : 'معطل'}
+                            </span>
+                        </td>
+                        <td>
+                            <button 
+                                class="action-btn edit" 
+                                onclick="editMember('${member.uid}')"
+                                ${isCurrentUser ? 'disabled' : ''}
+                            >
+                                تعديل
+                            </button>
+                            <button 
+                                class="action-btn toggle" 
+                                onclick="toggleMemberStatus('${member.uid}', ${member.active})"
+                                ${isCurrentUser ? 'disabled' : ''}
+                            >
+                                ${member.active ? 'تعطيل' : 'تفعيل'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Color picker handlers
+        document.getElementById('memberColor').addEventListener('input', (e) => {
+            document.getElementById('colorValue').textContent = e.target.value;
+        });
+
+        document.getElementById('editMemberColor').addEventListener('input', (e) => {
+            document.getElementById('editColorValue').textContent = e.target.value;
+        });
+
+        // إضافة عضو جديد
+        document.getElementById('addMemberBtn').addEventListener('click', () => {
+            document.getElementById('addMemberForm').reset();
+            document.getElementById('memberColor').value = '#bc8f74';
+            document.getElementById('colorValue').textContent = '#bc8f74';
+            document.getElementById('addMemberModal').classList.add('show');
+        });
+
+        document.getElementById('addMemberForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const uid = document.getElementById('memberUid').value.trim();
+            const memberData = {
+                name: document.getElementById('memberName').value.trim(),
+                email: document.getElementById('memberEmail').value.trim(),
+                role: document.getElementById('memberRole').value,
+                color: document.getElementById('memberColor').value,
+                active: true,
+                createdAt: serverTimestamp()
+            };
+
+            try {
+                await setDoc(doc(db, 'users', uid), memberData);
+                document.getElementById('addMemberModal').classList.remove('show');
+                await loadMembers();
+            } catch (error) {
+                console.error('خطأ في إضافة العضو:', error);
+                alert('حدث خطأ في إضافة العضو: ' + error.message);
+            }
+        });
+
+        // تعديل عضو
+        window.editMember = (uid) => {
+            const member = allMembers.find(m => m.uid === uid);
+            if (!member) return;
+
+            editingMemberId = uid;
+            document.getElementById('editMemberName').value = member.name;
+            document.getElementById('editMemberRole').value = member.role;
+            document.getElementById('editMemberColor').value = member.color;
+            document.getElementById('editColorValue').textContent = member.color;
+            document.getElementById('editMemberModal').classList.add('show');
+        };
+
+        document.getElementById('editMemberForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const updates = {
+                name: document.getElementById('editMemberName').value.trim(),
+                role: document.getElementById('editMemberRole').value,
+                color: document.getElementById('editMemberColor').value
+            };
+
+            try {
+                await updateDoc(doc(db, 'users', editingMemberId), updates);
+                document.getElementById('editMemberModal').classList.remove('show');
+                await loadMembers();
+            } catch (error) {
+                console.error('خطأ في تعديل العضو:', error);
+                alert('حدث خطأ في تعديل العضو');
+            }
+        });
+
+        // تفعيل/تعطيل عضو
+        window.toggleMemberStatus = async (uid, currentStatus) => {
+            const action = currentStatus ? 'تعطيل' : 'تفعيل';
+            if (!confirm(`هل أنت متأكد من ${action} هذا العضو؟`)) return;
+
+            try {
+                await updateDoc(doc(db, 'users', uid), {
+                    active: !currentStatus
+                });
+                await loadMembers();
+            } catch (error) {
+                console.error('خطأ في تغيير حالة العضو:', error);
+                alert('حدث خطأ في تغيير حالة العضو');
+            }
+        };
+
+        // إلغاء Modals
+        document.getElementById('cancelAddBtn').addEventListener('click', () => {
+            document.getElementById('addMemberModal').classList.remove('show');
+        });
+
+        document.getElementById('cancelEditBtn').addEventListener('click', () => {
+            document.getElementById('editMemberModal').classList.remove('show');
+        });
+
+        // تسجيل الخروج
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('خطأ في تسجيل الخروج:', error);
+            }
+        });
+
+        // قائمة الجوال
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+    </script>
+</body>
+</html>

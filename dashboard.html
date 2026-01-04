@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - MZJ Workspace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/shared.css">
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 2px 12px rgba(62, 36, 32, 0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--brown), var(--beige));
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(62, 36, 32, 0.15);
+        }
+        
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .stat-icon.projects {
+            background: rgba(62, 36, 32, 0.1);
+            color: var(--brown);
+        }
+        
+        .stat-icon.cars {
+            background: rgba(188, 143, 116, 0.1);
+            color: var(--beige);
+        }
+        
+        .stat-icon.photo {
+            background: rgba(255, 152, 0, 0.1);
+            color: #ff9800;
+        }
+        
+        .stat-icon.montage {
+            background: rgba(33, 150, 243, 0.1);
+            color: #2196f3;
+        }
+        
+        .stat-icon.users {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4caf50;
+        }
+        
+        .stat-value {
+            font-size: 42px;
+            font-weight: 800;
+            color: var(--brown);
+            line-height: 1;
+        }
+        
+        .stat-label {
+            font-size: 16px;
+            color: #666;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+        
+        .stat-change {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+        
+        .stat-change.warning {
+            background: rgba(255, 152, 0, 0.1);
+            color: #ff9800;
+        }
+        
+        .stat-change.info {
+            background: rgba(33, 150, 243, 0.1);
+            color: #2196f3;
+        }
+        
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .page-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--brown);
+        }
+        
+        .welcome-text {
+            color: #666;
+            font-size: 16px;
+            margin-top: 8px;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 248, 239, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--beige);
+            border-top-color: var(--brown);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: var(--brown);
+            color: var(--cream);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .page-title {
+                font-size: 24px;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="topbar-right">
+            <button class="menu-toggle" id="menuToggle">☰</button>
+            <h1 class="topbar-title">MZJ Workspace</h1>
+        </div>
+        <div class="topbar-left">
+            <div class="user-info" id="userInfo">
+                <div class="user-avatar" id="userAvatar"></div>
+                <span class="user-name" id="userName"></span>
+            </div>
+            <button class="logout-btn" id="logoutBtn">تسجيل الخروج</button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <nav class="sidebar-menu">
+            <a href="dashboard.html" class="menu-item active">
+                <span class="menu-icon">📊</span>
+                <span>لوحة التحكم</span>
+            </a>
+            <a href="projects.html" class="menu-item">
+                <span class="menu-icon">📋</span>
+                <span>المشاريع</span>
+            </a>
+            <a href="cars.html" class="menu-item">
+                <span class="menu-icon">🚗</span>
+                <span>السيارات</span>
+            </a>
+            <a href="media.html" class="menu-item">
+                <span class="menu-icon">📸</span>
+                <span>الميديا والتصوير</span>
+            </a>
+            <a href="members.html" class="menu-item">
+                <span class="menu-icon">👥</span>
+                <span>إدارة الأعضاء</span>
+            </a>
+            <a href="admin.html" class="menu-item">
+                <span class="menu-icon">📢</span>
+                <span>الحملات</span>
+            </a>
+            <a href="whiteboard.html" class="menu-item">
+                <span class="menu-icon">🎨</span>
+                <span>الوايت بورد</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">لوحة التحكم</h1>
+                <p class="welcome-text" id="welcomeText">مرحباً بك في نظام إدارة MZJ</p>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- كارت المشاريع -->
+            <div class="stat-card" data-link="projects.html">
+                <div class="stat-header">
+                    <div class="stat-icon projects">📋</div>
+                </div>
+                <div class="stat-value" id="projectsCount">-</div>
+                <div class="stat-label">إجمالي المشاريع</div>
+            </div>
+
+            <!-- كارت السيارات -->
+            <div class="stat-card" data-link="cars.html">
+                <div class="stat-header">
+                    <div class="stat-icon cars">🚗</div>
+                </div>
+                <div class="stat-value" id="carsCount">-</div>
+                <div class="stat-label">إجمالي السيارات</div>
+            </div>
+
+            <!-- كارت نواقص التصوير -->
+            <div class="stat-card" data-link="media.html?filter=photo">
+                <div class="stat-header">
+                    <div class="stat-icon photo">📸</div>
+                </div>
+                <div class="stat-value" id="photoshootCount">-</div>
+                <div class="stat-label">نواقص التصوير</div>
+                <div class="stat-change warning" id="photoshootChange" style="display: none;">يحتاج متابعة</div>
+            </div>
+
+            <!-- كارت نواقص المونتاج -->
+            <div class="stat-card" data-link="media.html?filter=montage">
+                <div class="stat-header">
+                    <div class="stat-icon montage">🎬</div>
+                </div>
+                <div class="stat-value" id="montageCount">-</div>
+                <div class="stat-label">نواقص المونتاج</div>
+                <div class="stat-change info" id="montageChange" style="display: none;">يحتاج متابعة</div>
+            </div>
+
+            <!-- كارت المستخدمين -->
+            <div class="stat-card" data-link="members.html">
+                <div class="stat-header">
+                    <div class="stat-icon users">👥</div>
+                </div>
+                <div class="stat-value" id="usersCount">-</div>
+                <div class="stat-label">عدد المستخدمين</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, collection, query, where, getDocs, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { firebaseConfig } from './scripts/firebase-config.js';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+
+        // التحقق من صلاحية Admin
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                
+                if (!userDoc.exists() || !userDoc.data().active) {
+                    await signOut(auth);
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const userData = userDoc.data();
+                currentUser = { user, userData };
+
+                // التحقق من صلاحية Admin
+                if (userData.role !== 'admin') {
+                    window.location.href = 'projects.html';
+                    return;
+                }
+
+                // عرض معلومات المستخدم
+                document.getElementById('userName').textContent = userData.name;
+                document.getElementById('userAvatar').textContent = userData.name.charAt(0);
+                document.getElementById('userAvatar').style.background = userData.color || '#bc8f74';
+                document.getElementById('welcomeText').textContent = `مرحباً ${userData.name}، إليك ملخص اليوم`;
+
+                // تحميل الإحصائيات
+                await loadDashboardStats();
+
+                // إخفاء شاشة التحميل
+                document.getElementById('loadingOverlay').style.display = 'none';
+
+            } catch (error) {
+                console.error('خطأ في التحقق من المستخدم:', error);
+                window.location.href = 'login.html';
+            }
+        });
+
+        // تحميل إحصائيات Dashboard
+        async function loadDashboardStats() {
+            try {
+                // عدد المشاريع
+                const projectsSnap = await getDocs(collection(db, 'projects'));
+                document.getElementById('projectsCount').textContent = projectsSnap.size;
+
+                // عدد السيارات
+                const carsSnap = await getDocs(collection(db, 'cars'));
+                document.getElementById('carsCount').textContent = carsSnap.size;
+
+                // نواقص التصوير
+                const photoshootQuery = query(collection(db, 'cars'), where('photoshoot', '==', false));
+                const photoshootSnap = await getDocs(photoshootQuery);
+                const photoshootCount = photoshootSnap.size;
+                document.getElementById('photoshootCount').textContent = photoshootCount;
+                
+                if (photoshootCount > 0) {
+                    document.getElementById('photoshootChange').style.display = 'inline-block';
+                }
+
+                // نواقص المونتاج
+                const montageQuery = query(collection(db, 'cars'), where('montage', '==', false));
+                const montageSnap = await getDocs(montageQuery);
+                const montageCount = montageSnap.size;
+                document.getElementById('montageCount').textContent = montageCount;
+                
+                if (montageCount > 0) {
+                    document.getElementById('montageChange').style.display = 'inline-block';
+                }
+
+                // عدد المستخدمين النشطين
+                const usersQuery = query(collection(db, 'users'), where('active', '==', true));
+                const usersSnap = await getDocs(usersQuery);
+                document.getElementById('usersCount').textContent = usersSnap.size;
+
+            } catch (error) {
+                console.error('خطأ في تحميل الإحصائيات:', error);
+            }
+        }
+
+        // التنقل عند الضغط على الكروت
+        document.querySelectorAll('.stat-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const link = card.getAttribute('data-link');
+                if (link) {
+                    window.location.href = link;
+                }
+            });
+        });
+
+        // تسجيل الخروج
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('خطأ في تسجيل الخروج:', error);
+            }
+        });
+
+        // قائمة الجوال
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+    </script>
+</body>
+</html>

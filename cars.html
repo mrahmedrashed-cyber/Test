@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>السيارات - MZJ Workspace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/shared.css">
+    <style>
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .page-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--brown);
+        }
+        
+        .cars-container {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(62, 36, 32, 0.08);
+        }
+        
+        .filters-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .filter-input,
+        .filter-select {
+            padding: 10px 14px;
+            border: 2px solid #e0d4c8;
+            border-radius: 8px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .filter-input:focus,
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--beige);
+            box-shadow: 0 0 0 3px rgba(188, 143, 116, 0.1);
+        }
+        
+        .checkbox-filter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            background: rgba(188, 143, 116, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .checkbox-filter:hover {
+            background: rgba(188, 143, 116, 0.1);
+        }
+        
+        .checkbox-filter input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .checkbox-filter label {
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1200px;
+        }
+        
+        thead {
+            background: var(--brown);
+            color: var(--cream);
+        }
+        
+        th {
+            padding: 14px 12px;
+            text-align: right;
+            font-weight: 600;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        
+        td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+        }
+        
+        tbody tr {
+            transition: background 0.2s ease;
+        }
+        
+        tbody tr:hover {
+            background: rgba(188, 143, 116, 0.05);
+        }
+        
+        .status-select {
+            padding: 6px 10px;
+            border: 1px solid #e0d4c8;
+            border-radius: 6px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 13px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .status-select:focus {
+            outline: none;
+            border-color: var(--beige);
+        }
+        
+        .checkbox-cell {
+            text-align: center;
+        }
+        
+        .checkbox-cell input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .notes-input {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #e0d4c8;
+            border-radius: 6px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 13px;
+            resize: vertical;
+            min-height: 32px;
+        }
+        
+        .notes-input:focus {
+            outline: none;
+            border-color: var(--beige);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        
+        .empty-state-text {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        .save-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-right: 8px;
+            font-weight: 600;
+        }
+        
+        .save-indicator.saving {
+            background: rgba(33, 150, 243, 0.1);
+            color: #2196f3;
+        }
+        
+        .save-indicator.saved {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4caf50;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--brown);
+            margin-bottom: 24px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: var(--brown);
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e0d4c8;
+            border-radius: 8px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--beige);
+            box-shadow: 0 0 0 3px rgba(188, 143, 116, 0.1);
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .modal-btn.primary {
+            background: var(--brown);
+            color: var(--cream);
+        }
+        
+        .modal-btn.primary:hover {
+            background: #2a1814;
+        }
+        
+        .modal-btn.secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .modal-btn.secondary:hover {
+            background: #d0d0d0;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 248, 239, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--beige);
+            border-top-color: var(--brown);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: var(--brown);
+            color: var(--cream);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 24px;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .filters-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="topbar-right">
+            <button class="menu-toggle" id="menuToggle">☰</button>
+            <h1 class="topbar-title">MZJ Workspace</h1>
+        </div>
+        <div class="topbar-left">
+            <div class="user-info" id="userInfo">
+                <div class="user-avatar" id="userAvatar"></div>
+                <span class="user-name" id="userName"></span>
+            </div>
+            <button class="logout-btn" id="logoutBtn">تسجيل الخروج</button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <nav class="sidebar-menu">
+            <a href="dashboard.html" class="menu-item">
+                <span class="menu-icon">📊</span>
+                <span>لوحة التحكم</span>
+            </a>
+            <a href="projects.html" class="menu-item">
+                <span class="menu-icon">📋</span>
+                <span>المشاريع</span>
+            </a>
+            <a href="cars.html" class="menu-item active">
+                <span class="menu-icon">🚗</span>
+                <span>السيارات</span>
+            </a>
+            <a href="media.html" class="menu-item">
+                <span class="menu-icon">📸</span>
+                <span>الميديا والتصوير</span>
+            </a>
+            <a href="members.html" class="menu-item">
+                <span class="menu-icon">👥</span>
+                <span>إدارة الأعضاء</span>
+            </a>
+            <a href="admin.html" class="menu-item">
+                <span class="menu-icon">📢</span>
+                <span>الحملات</span>
+            </a>
+            <a href="whiteboard.html" class="menu-item">
+                <span class="menu-icon">🎨</span>
+                <span>الوايت بورد</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">متابعة السيارات</h1>
+            <button class="btn btn-primary" id="addCarBtn">
+                إضافة سيارة جديدة
+            </button>
+        </div>
+
+        <div class="cars-container">
+            <div class="filters-row">
+                <input 
+                    type="text" 
+                    class="filter-input" 
+                    id="searchName" 
+                    placeholder="البحث بالاسم..."
+                >
+                <input 
+                    type="text" 
+                    class="filter-input" 
+                    id="searchVIN" 
+                    placeholder="البحث بـ VIN..."
+                >
+                <select class="filter-select" id="filterModel">
+                    <option value="">جميع الموديلات</option>
+                </select>
+                <select class="filter-select" id="filterStatus">
+                    <option value="">جميع الحالات</option>
+                    <option value="مخزون متاح">مخزون متاح</option>
+                    <option value="مباع">مباع</option>
+                    <option value="مباع تحت التسليم">مباع تحت التسليم</option>
+                    <option value="تم التسليم">تم التسليم</option>
+                </select>
+                <div class="checkbox-filter">
+                    <input type="checkbox" id="filterPhotoshoot">
+                    <label for="filterPhotoshoot">نواقص التصوير فقط</label>
+                </div>
+                <div class="checkbox-filter">
+                    <input type="checkbox" id="filterMontage">
+                    <label for="filterMontage">نواقص المونتاج فقط</label>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="carsTable">
+                    <thead>
+                        <tr>
+                            <th>اسم السيارة</th>
+                            <th>VIN</th>
+                            <th>الموديل</th>
+                            <th>اللون الخارجي</th>
+                            <th>اللون الداخلي</th>
+                            <th>الحالة</th>
+                            <th>تصوير</th>
+                            <th>مونتاج</th>
+                            <th style="min-width: 150px;">ملاحظات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="carsBody">
+                        <!-- سيتم ملؤها ديناميكياً -->
+                    </tbody>
+                </table>
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <div class="empty-state-icon">🚗</div>
+                    <div class="empty-state-text">لا توجد سيارات مطابقة للبحث</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal لإضافة سيارة -->
+    <div class="modal" id="carModal">
+        <div class="modal-content">
+            <h2 class="modal-header">إضافة سيارة جديدة</h2>
+            <form id="carForm">
+                <div class="form-group">
+                    <label for="carName">اسم السيارة</label>
+                    <input type="text" id="carName" required placeholder="مثال: تويوتا كامري">
+                </div>
+                
+                <div class="form-group">
+                    <label for="carVIN">VIN</label>
+                    <input type="text" id="carVIN" required placeholder="رقم الهيكل">
+                </div>
+                
+                <div class="form-group">
+                    <label for="carModel">الموديل</label>
+                    <input type="text" id="carModel" required placeholder="مثال: 2024">
+                </div>
+                
+                <div class="form-group">
+                    <label for="carYear">السنة</label>
+                    <input type="number" id="carYear" required placeholder="مثال: 2024">
+                </div>
+                
+                <div class="form-group">
+                    <label for="carExtColor">اللون الخارجي</label>
+                    <input type="text" id="carExtColor" required placeholder="مثال: أبيض">
+                </div>
+                
+                <div class="form-group">
+                    <label for="carIntColor">اللون الداخلي</label>
+                    <input type="text" id="carIntColor" required placeholder="مثال: بيج">
+                </div>
+                
+                <div class="form-group">
+                    <label for="carStatus">الحالة</label>
+                    <select id="carStatus" required>
+                        <option value="مخزون متاح">مخزون متاح</option>
+                        <option value="مباع">مباع</option>
+                        <option value="مباع تحت التسليم">مباع تحت التسليم</option>
+                        <option value="تم التسليم">تم التسليم</option>
+                    </select>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="submit" class="modal-btn primary">حفظ</button>
+                    <button type="button" class="modal-btn secondary" id="cancelBtn">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { firebaseConfig } from './scripts/firebase-config.js';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let allCars = [];
+        let updateTimeouts = {};
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                
+                if (!userDoc.exists() || !userDoc.data().active) {
+                    await signOut(auth);
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const userData = userDoc.data();
+                currentUser = { user, userData };
+
+                // التحقق من صلاحية Admin
+                if (userData.role !== 'admin') {
+                    window.location.href = 'projects.html';
+                    return;
+                }
+
+                // عرض معلومات المستخدم
+                document.getElementById('userName').textContent = userData.name;
+                document.getElementById('userAvatar').textContent = userData.name.charAt(0);
+                document.getElementById('userAvatar').style.background = userData.color || '#bc8f74';
+
+                await loadCars();
+                document.getElementById('loadingOverlay').style.display = 'none';
+
+            } catch (error) {
+                console.error('خطأ في التحقق من المستخدم:', error);
+                window.location.href = 'login.html';
+            }
+        });
+
+        async function loadCars() {
+            try {
+                const carsSnap = await getDocs(collection(db, 'cars'));
+                allCars = carsSnap.docs.map(doc => ({
+                    vin: doc.id,
+                    ...doc.data()
+                }));
+
+                // استخراج الموديلات الفريدة
+                const models = [...new Set(allCars.map(car => car.model))].sort();
+                const modelSelect = document.getElementById('filterModel');
+                models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model;
+                    option.textContent = model;
+                    modelSelect.appendChild(option);
+                });
+
+                renderCars(allCars);
+            } catch (error) {
+                console.error('خطأ في تحميل السيارات:', error);
+            }
+        }
+
+        function renderCars(cars) {
+            const tbody = document.getElementById('carsBody');
+            const emptyState = document.getElementById('emptyState');
+
+            if (cars.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            
+            tbody.innerHTML = cars.map(car => `
+                <tr>
+                    <td><strong>${car.name}</strong></td>
+                    <td>${car.vin}</td>
+                    <td>${car.model}</td>
+                    <td>${car.extColor}</td>
+                    <td>${car.intColor}</td>
+                    <td>
+                        <select class="status-select" data-vin="${car.vin}" onchange="updateCarStatus('${car.vin}', this.value)">
+                            <option value="مخزون متاح" ${car.status === 'مخزون متاح' ? 'selected' : ''}>مخزون متاح</option>
+                            <option value="مباع" ${car.status === 'مباع' ? 'selected' : ''}>مباع</option>
+                            <option value="مباع تحت التسليم" ${car.status === 'مباع تحت التسليم' ? 'selected' : ''}>مباع تحت التسليم</option>
+                            <option value="تم التسليم" ${car.status === 'تم التسليم' ? 'selected' : ''}>تم التسليم</option>
+                        </select>
+                    </td>
+                    <td class="checkbox-cell">
+                        <input type="checkbox" ${car.photoshoot ? 'checked' : ''} onchange="updateCarCheckbox('${car.vin}', 'photoshoot', this.checked)">
+                    </td>
+                    <td class="checkbox-cell">
+                        <input type="checkbox" ${car.montage ? 'checked' : ''} onchange="updateCarCheckbox('${car.vin}', 'montage', this.checked)">
+                    </td>
+                    <td>
+                        <input type="text" class="notes-input" value="${car.notes || ''}" data-vin="${car.vin}" onchange="updateCarNotes('${car.vin}', this.value)" placeholder="أضف ملاحظة...">
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // تحديث حالة السيارة
+        window.updateCarStatus = async (vin, status) => {
+            try {
+                await updateDoc(doc(db, 'cars', vin), {
+                    status,
+                    updatedAt: serverTimestamp()
+                });
+                
+                const carIndex = allCars.findIndex(c => c.vin === vin);
+                if (carIndex !== -1) {
+                    allCars[carIndex].status = status;
+                }
+            } catch (error) {
+                console.error('خطأ في تحديث الحالة:', error);
+            }
+        };
+
+        // تحديث checkbox
+        window.updateCarCheckbox = async (vin, field, value) => {
+            try {
+                await updateDoc(doc(db, 'cars', vin), {
+                    [field]: value,
+                    updatedAt: serverTimestamp()
+                });
+                
+                const carIndex = allCars.findIndex(c => c.vin === vin);
+                if (carIndex !== -1) {
+                    allCars[carIndex][field] = value;
+                }
+            } catch (error) {
+                console.error('خطأ في التحديث:', error);
+            }
+        };
+
+        // تحديث الملاحظات مع debounce
+        window.updateCarNotes = (vin, notes) => {
+            if (updateTimeouts[vin]) {
+                clearTimeout(updateTimeouts[vin]);
+            }
+
+            updateTimeouts[vin] = setTimeout(async () => {
+                try {
+                    await updateDoc(doc(db, 'cars', vin), {
+                        notes,
+                        updatedAt: serverTimestamp()
+                    });
+                    
+                    const carIndex = allCars.findIndex(c => c.vin === vin);
+                    if (carIndex !== -1) {
+                        allCars[carIndex].notes = notes;
+                    }
+                } catch (error) {
+                    console.error('خطأ في تحديث الملاحظات:', error);
+                }
+            }, 1000);
+        };
+
+        // الفلاتر
+        function applyFilters() {
+            const searchName = document.getElementById('searchName').value.toLowerCase().trim();
+            const searchVIN = document.getElementById('searchVIN').value.toLowerCase().trim();
+            const filterModel = document.getElementById('filterModel').value;
+            const filterStatus = document.getElementById('filterStatus').value;
+            const filterPhotoshoot = document.getElementById('filterPhotoshoot').checked;
+            const filterMontage = document.getElementById('filterMontage').checked;
+
+            const filtered = allCars.filter(car => {
+                if (searchName && !car.name.toLowerCase().includes(searchName)) return false;
+                if (searchVIN && !car.vin.toLowerCase().includes(searchVIN)) return false;
+                if (filterModel && car.model !== filterModel) return false;
+                if (filterStatus && car.status !== filterStatus) return false;
+                if (filterPhotoshoot && car.photoshoot) return false;
+                if (filterMontage && car.montage) return false;
+                return true;
+            });
+
+            renderCars(filtered);
+        }
+
+        document.getElementById('searchName').addEventListener('input', applyFilters);
+        document.getElementById('searchVIN').addEventListener('input', applyFilters);
+        document.getElementById('filterModel').addEventListener('change', applyFilters);
+        document.getElementById('filterStatus').addEventListener('change', applyFilters);
+        document.getElementById('filterPhotoshoot').addEventListener('change', applyFilters);
+        document.getElementById('filterMontage').addEventListener('change', applyFilters);
+
+        // إضافة سيارة
+        document.getElementById('addCarBtn').addEventListener('click', () => {
+            document.getElementById('carForm').reset();
+            document.getElementById('carModal').classList.add('show');
+        });
+
+        document.getElementById('carForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const carData = {
+                name: document.getElementById('carName').value.trim(),
+                model: document.getElementById('carModel').value.trim(),
+                year: parseInt(document.getElementById('carYear').value),
+                extColor: document.getElementById('carExtColor').value.trim(),
+                intColor: document.getElementById('carIntColor').value.trim(),
+                status: document.getElementById('carStatus').value,
+                photoshoot: false,
+                montage: false,
+                notes: '',
+                updatedAt: serverTimestamp()
+            };
+
+            const vin = document.getElementById('carVIN').value.trim();
+
+            try {
+                await setDoc(doc(db, 'cars', vin), carData);
+                document.getElementById('carModal').classList.remove('show');
+                await loadCars();
+            } catch (error) {
+                console.error('خطأ في إضافة السيارة:', error);
+                alert('حدث خطأ في إضافة السيارة');
+            }
+        });
+
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            document.getElementById('carModal').classList.remove('show');
+        });
+
+        // تسجيل الخروج
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('خطأ في تسجيل الخروج:', error);
+            }
+        });
+
+        // قائمة الجوال
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+    </script>
+</body>
+</html>

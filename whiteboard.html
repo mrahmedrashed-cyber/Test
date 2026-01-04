@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الوايت بورد - MZJ Workspace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/shared.css">
+    <style>
+        .whiteboard-container {
+            position: fixed;
+            top: 70px;
+            right: 260px;
+            left: 0;
+            bottom: 0;
+            background: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .whiteboard-toolbar {
+            background: white;
+            padding: 16px 24px;
+            box-shadow: 0 2px 8px rgba(62, 36, 32, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .tool-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            padding-right: 16px;
+            border-right: 2px solid #e0e0e0;
+        }
+        
+        .tool-group:last-child {
+            border-right: none;
+        }
+        
+        .tool-btn {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #e0d4c8;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.2s ease;
+        }
+        
+        .tool-btn:hover {
+            background: rgba(188, 143, 116, 0.1);
+            border-color: var(--beige);
+        }
+        
+        .tool-btn.active {
+            background: var(--brown);
+            color: var(--cream);
+            border-color: var(--brown);
+        }
+        
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: white;
+            margin: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(62, 36, 32, 0.08);
+        }
+        
+        #whiteboard-canvas {
+            cursor: crosshair;
+        }
+        
+        .coming-soon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #999;
+        }
+        
+        .coming-soon-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        
+        .coming-soon-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--brown);
+            margin-bottom: 12px;
+        }
+        
+        .coming-soon-desc {
+            font-size: 16px;
+            color: #666;
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: var(--brown);
+            color: var(--cream);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .whiteboard-container {
+                right: 0;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .tool-group {
+                padding-right: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="topbar-right">
+            <button class="menu-toggle" id="menuToggle">☰</button>
+            <h1 class="topbar-title">MZJ Workspace</h1>
+        </div>
+        <div class="topbar-left">
+            <div class="user-info" id="userInfo">
+                <div class="user-avatar" id="userAvatar"></div>
+                <span class="user-name" id="userName"></span>
+            </div>
+            <button class="logout-btn" id="logoutBtn">تسجيل الخروج</button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <nav class="sidebar-menu">
+            <a href="dashboard.html" class="menu-item" id="dashboardLink">
+                <span class="menu-icon">📊</span>
+                <span>لوحة التحكم</span>
+            </a>
+            <a href="projects.html" class="menu-item">
+                <span class="menu-icon">📋</span>
+                <span>المشاريع</span>
+            </a>
+            <a href="cars.html" class="menu-item" id="carsLink">
+                <span class="menu-icon">🚗</span>
+                <span>السيارات</span>
+            </a>
+            <a href="media.html" class="menu-item" id="mediaLink">
+                <span class="menu-icon">📸</span>
+                <span>الميديا والتصوير</span>
+            </a>
+            <a href="members.html" class="menu-item" id="membersLink">
+                <span class="menu-icon">👥</span>
+                <span>إدارة الأعضاء</span>
+            </a>
+            <a href="admin.html" class="menu-item" id="campaignsLink">
+                <span class="menu-icon">📢</span>
+                <span>الحملات</span>
+            </a>
+            <a href="whiteboard.html" class="menu-item active">
+                <span class="menu-icon">🎨</span>
+                <span>الوايت بورد</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Whiteboard Container -->
+    <div class="whiteboard-container">
+        <div class="whiteboard-toolbar">
+            <div class="tool-group">
+                <button class="tool-btn active" title="Select">🖱️</button>
+                <button class="tool-btn" title="Hand">✋</button>
+            </div>
+            
+            <div class="tool-group">
+                <button class="tool-btn" title="Rectangle">▭</button>
+                <button class="tool-btn" title="Arrow">➜</button>
+                <button class="tool-btn" title="Text">T</button>
+                <button class="tool-btn" title="Sticky Note">📝</button>
+            </div>
+            
+            <div class="tool-group">
+                <button class="tool-btn" title="Zoom In">🔍+</button>
+                <button class="tool-btn" title="Zoom Out">🔍−</button>
+            </div>
+            
+            <div class="tool-group">
+                <button class="tool-btn" title="Undo">↶</button>
+                <button class="tool-btn" title="Redo">↷</button>
+            </div>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="whiteboard-canvas"></canvas>
+            
+            <div class="coming-soon">
+                <div class="coming-soon-icon">🎨</div>
+                <div class="coming-soon-text">الوايت بورد التفاعلي</div>
+                <div class="coming-soon-desc">هذه الميزة قيد التطوير وستكون متاحة قريباً</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { firebaseConfig } from './scripts/firebase-config.js';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                
+                if (!userDoc.exists() || !userDoc.data().active) {
+                    await signOut(auth);
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const userData = userDoc.data();
+                currentUser = { user, userData };
+
+                // عرض معلومات المستخدم
+                document.getElementById('userName').textContent = userData.name;
+                document.getElementById('userAvatar').textContent = userData.name.charAt(0);
+                document.getElementById('userAvatar').style.background = userData.color || '#bc8f74';
+
+                // إخفاء الصفحات المحظورة على Member
+                if (userData.role === 'member') {
+                    document.getElementById('dashboardLink')?.remove();
+                    document.getElementById('carsLink')?.remove();
+                    document.getElementById('mediaLink')?.remove();
+                    document.getElementById('membersLink')?.remove();
+                    document.getElementById('campaignsLink')?.remove();
+                }
+
+            } catch (error) {
+                console.error('خطأ في التحقق من المستخدم:', error);
+                window.location.href = 'login.html';
+            }
+        });
+
+        // تسجيل الخروج
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('خطأ في تسجيل الخروج:', error);
+            }
+        });
+
+        // قائمة الجوال
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+
+        // Tool buttons interaction
+        document.querySelectorAll('.tool-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

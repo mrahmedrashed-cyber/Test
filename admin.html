@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الحملات التسويقية - MZJ Workspace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/shared.css">
+    <style>
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .page-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--brown);
+        }
+        
+        .campaigns-container {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(62, 36, 32, 0.08);
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .search-box {
+            padding: 10px 16px;
+            border: 2px solid #e0d4c8;
+            border-radius: 8px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 14px;
+            min-width: 250px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: var(--beige);
+            box-shadow: 0 0 0 3px rgba(188, 143, 116, 0.1);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: var(--brown);
+            color: var(--cream);
+        }
+        
+        th {
+            padding: 16px;
+            text-align: right;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+        
+        tbody tr {
+            transition: background 0.2s ease;
+        }
+        
+        tbody tr:hover {
+            background: rgba(188, 143, 116, 0.05);
+        }
+        
+        .campaign-type-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .campaign-type-badge.social {
+            background: rgba(33, 150, 243, 0.1);
+            color: #2196f3;
+        }
+        
+        .campaign-type-badge.email {
+            background: rgba(255, 152, 0, 0.1);
+            color: #ff9800;
+        }
+        
+        .campaign-type-badge.sms {
+            background: rgba(156, 39, 176, 0.1);
+            color: #9c27b0;
+        }
+        
+        .campaign-type-badge.event {
+            background: rgba(233, 30, 99, 0.1);
+            color: #e91e63;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .status-badge.draft {
+            background: rgba(158, 158, 158, 0.1);
+            color: #9e9e9e;
+        }
+        
+        .status-badge.active {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4caf50;
+        }
+        
+        .status-badge.scheduled {
+            background: rgba(255, 152, 0, 0.1);
+            color: #ff9800;
+        }
+        
+        .status-badge.completed {
+            background: rgba(33, 150, 243, 0.1);
+            color: #2196f3;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-left: 6px;
+        }
+        
+        .action-btn.edit {
+            background: var(--beige);
+            color: white;
+        }
+        
+        .action-btn.edit:hover {
+            background: #a67d62;
+        }
+        
+        .action-btn.delete {
+            background: #f44336;
+            color: white;
+        }
+        
+        .action-btn.delete:hover {
+            background: #d32f2f;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        
+        .empty-state-text {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--brown);
+            margin-bottom: 24px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: var(--brown);
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e0d4c8;
+            border-radius: 8px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--beige);
+            box-shadow: 0 0 0 3px rgba(188, 143, 116, 0.1);
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .modal-btn.primary {
+            background: var(--brown);
+            color: var(--cream);
+        }
+        
+        .modal-btn.primary:hover {
+            background: #2a1814;
+        }
+        
+        .modal-btn.secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .modal-btn.secondary:hover {
+            background: #d0d0d0;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 248, 239, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--beige);
+            border-top-color: var(--brown);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: var(--brown);
+            color: var(--cream);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 24px;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .table-container {
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="topbar-right">
+            <button class="menu-toggle" id="menuToggle">☰</button>
+            <h1 class="topbar-title">MZJ Workspace</h1>
+        </div>
+        <div class="topbar-left">
+            <div class="user-info" id="userInfo">
+                <div class="user-avatar" id="userAvatar"></div>
+                <span class="user-name" id="userName"></span>
+            </div>
+            <button class="logout-btn" id="logoutBtn">تسجيل الخروج</button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <nav class="sidebar-menu">
+            <a href="dashboard.html" class="menu-item">
+                <span class="menu-icon">📊</span>
+                <span>لوحة التحكم</span>
+            </a>
+            <a href="projects.html" class="menu-item">
+                <span class="menu-icon">📋</span>
+                <span>المشاريع</span>
+            </a>
+            <a href="cars.html" class="menu-item">
+                <span class="menu-icon">🚗</span>
+                <span>السيارات</span>
+            </a>
+            <a href="media.html" class="menu-item">
+                <span class="menu-icon">📸</span>
+                <span>الميديا والتصوير</span>
+            </a>
+            <a href="members.html" class="menu-item">
+                <span class="menu-icon">👥</span>
+                <span>إدارة الأعضاء</span>
+            </a>
+            <a href="admin.html" class="menu-item active">
+                <span class="menu-icon">📢</span>
+                <span>الحملات</span>
+            </a>
+            <a href="whiteboard.html" class="menu-item">
+                <span class="menu-icon">🎨</span>
+                <span>الوايت بورد</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">الحملات التسويقية</h1>
+            <button class="btn btn-primary" id="addCampaignBtn">
+                إضافة حملة جديدة
+            </button>
+        </div>
+
+        <div class="campaigns-container">
+            <div class="table-header">
+                <input 
+                    type="text" 
+                    class="search-box" 
+                    id="searchBox" 
+                    placeholder="البحث عن حملة..."
+                >
+            </div>
+
+            <div class="table-container">
+                <table id="campaignsTable">
+                    <thead>
+                        <tr>
+                            <th>اسم الحملة</th>
+                            <th>النوع</th>
+                            <th>الحالة</th>
+                            <th>تاريخ البداية</th>
+                            <th>تاريخ النهاية</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="campaignsBody">
+                        <!-- سيتم ملؤها ديناميكياً -->
+                    </tbody>
+                </table>
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <div class="empty-state-icon">📢</div>
+                    <div class="empty-state-text">لا توجد حملات حالياً</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal لإضافة/تعديل حملة -->
+    <div class="modal" id="campaignModal">
+        <div class="modal-content">
+            <h2 class="modal-header" id="modalTitle">إضافة حملة جديدة</h2>
+            <form id="campaignForm">
+                <div class="form-group">
+                    <label for="campaignTitle">اسم الحملة</label>
+                    <input type="text" id="campaignTitle" required placeholder="أدخل اسم الحملة">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="campaignType">النوع</label>
+                        <select id="campaignType" required>
+                            <option value="social">سوشيال ميديا</option>
+                            <option value="email">بريد إلكتروني</option>
+                            <option value="sms">رسائل نصية</option>
+                            <option value="event">فعالية</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="campaignStatus">الحالة</label>
+                        <select id="campaignStatus" required>
+                            <option value="draft">مسودة</option>
+                            <option value="scheduled">مجدولة</option>
+                            <option value="active">نشطة</option>
+                            <option value="completed">مكتملة</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="campaignStartDate">تاريخ البداية</label>
+                        <input type="date" id="campaignStartDate" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="campaignEndDate">تاريخ النهاية</label>
+                        <input type="date" id="campaignEndDate" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="campaignDescription">الوصف</label>
+                    <textarea id="campaignDescription" placeholder="وصف الحملة والأهداف..."></textarea>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="submit" class="modal-btn primary" id="saveBtn">حفظ</button>
+                    <button type="button" class="modal-btn secondary" id="cancelBtn">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, serverTimestamp, orderBy, query } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { firebaseConfig } from './scripts/firebase-config.js';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let allCampaigns = [];
+        let editingCampaignId = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                
+                if (!userDoc.exists() || !userDoc.data().active) {
+                    await signOut(auth);
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const userData = userDoc.data();
+                currentUser = { user, userData };
+
+                // التحقق من صلاحية Admin
+                if (userData.role !== 'admin') {
+                    window.location.href = 'projects.html';
+                    return;
+                }
+
+                // عرض معلومات المستخدم
+                document.getElementById('userName').textContent = userData.name;
+                document.getElementById('userAvatar').textContent = userData.name.charAt(0);
+                document.getElementById('userAvatar').style.background = userData.color || '#bc8f74';
+
+                await loadCampaigns();
+                document.getElementById('loadingOverlay').style.display = 'none';
+
+            } catch (error) {
+                console.error('خطأ في التحقق من المستخدم:', error);
+                window.location.href = 'login.html';
+            }
+        });
+
+        async function loadCampaigns() {
+            try {
+                const campaignsQuery = query(collection(db, 'campaigns'), orderBy('createdAt', 'desc'));
+                const campaignsSnap = await getDocs(campaignsQuery);
+                
+                allCampaigns = campaignsSnap.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                renderCampaigns(allCampaigns);
+            } catch (error) {
+                console.error('خطأ في تحميل الحملات:', error);
+            }
+        }
+
+        function renderCampaigns(campaigns) {
+            const tbody = document.getElementById('campaignsBody');
+            const emptyState = document.getElementById('emptyState');
+
+            if (campaigns.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            
+            const typeLabels = {
+                'social': 'سوشيال ميديا',
+                'email': 'بريد إلكتروني',
+                'sms': 'رسائل نصية',
+                'event': 'فعالية'
+            };
+
+            const statusLabels = {
+                'draft': 'مسودة',
+                'scheduled': 'مجدولة',
+                'active': 'نشطة',
+                'completed': 'مكتملة'
+            };
+
+            tbody.innerHTML = campaigns.map(campaign => `
+                <tr>
+                    <td><strong>${campaign.title}</strong></td>
+                    <td><span class="campaign-type-badge ${campaign.type}">${typeLabels[campaign.type]}</span></td>
+                    <td><span class="status-badge ${campaign.status}">${statusLabels[campaign.status]}</span></td>
+                    <td>${campaign.startDate || '-'}</td>
+                    <td>${campaign.endDate || '-'}</td>
+                    <td>
+                        <button class="action-btn edit" onclick="editCampaign('${campaign.id}')">تعديل</button>
+                        <button class="action-btn delete" onclick="deleteCampaign('${campaign.id}')">حذف</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // البحث
+        document.getElementById('searchBox').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            const filtered = allCampaigns.filter(campaign => 
+                campaign.title.toLowerCase().includes(searchTerm)
+            );
+            renderCampaigns(filtered);
+        });
+
+        // إضافة حملة جديدة
+        document.getElementById('addCampaignBtn').addEventListener('click', () => {
+            editingCampaignId = null;
+            document.getElementById('modalTitle').textContent = 'إضافة حملة جديدة';
+            document.getElementById('campaignForm').reset();
+            document.getElementById('campaignModal').classList.add('show');
+        });
+
+        // حفظ الحملة
+        document.getElementById('campaignForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const campaignData = {
+                title: document.getElementById('campaignTitle').value.trim(),
+                type: document.getElementById('campaignType').value,
+                status: document.getElementById('campaignStatus').value,
+                startDate: document.getElementById('campaignStartDate').value,
+                endDate: document.getElementById('campaignEndDate').value,
+                description: document.getElementById('campaignDescription').value.trim()
+            };
+
+            try {
+                if (editingCampaignId) {
+                    await updateDoc(doc(db, 'campaigns', editingCampaignId), campaignData);
+                } else {
+                    campaignData.createdAt = serverTimestamp();
+                    await addDoc(collection(db, 'campaigns'), campaignData);
+                }
+
+                document.getElementById('campaignModal').classList.remove('show');
+                await loadCampaigns();
+            } catch (error) {
+                console.error('خطأ في حفظ الحملة:', error);
+                alert('حدث خطأ في حفظ الحملة');
+            }
+        });
+
+        // تعديل حملة
+        window.editCampaign = async (campaignId) => {
+            const campaign = allCampaigns.find(c => c.id === campaignId);
+            if (!campaign) return;
+
+            editingCampaignId = campaignId;
+            document.getElementById('modalTitle').textContent = 'تعديل الحملة';
+            document.getElementById('campaignTitle').value = campaign.title;
+            document.getElementById('campaignType').value = campaign.type;
+            document.getElementById('campaignStatus').value = campaign.status;
+            document.getElementById('campaignStartDate').value = campaign.startDate;
+            document.getElementById('campaignEndDate').value = campaign.endDate;
+            document.getElementById('campaignDescription').value = campaign.description || '';
+            document.getElementById('campaignModal').classList.add('show');
+        };
+
+        // حذف حملة
+        window.deleteCampaign = async (campaignId) => {
+            if (!confirm('هل أنت متأكد من حذف هذه الحملة؟')) return;
+
+            try {
+                await deleteDoc(doc(db, 'campaigns', campaignId));
+                await loadCampaigns();
+            } catch (error) {
+                console.error('خطأ في حذف الحملة:', error);
+                alert('حدث خطأ في حذف الحملة');
+            }
+        };
+
+        // إلغاء Modal
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            document.getElementById('campaignModal').classList.remove('show');
+        });
+
+        // تسجيل الخروج
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('خطأ في تسجيل الخروج:', error);
+            }
+        });
+
+        // قائمة الجوال
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+    </script>
+</body>
+</html>
