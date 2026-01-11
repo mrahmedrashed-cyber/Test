@@ -1,0 +1,7 @@
+{
+  "name": "MZJ Workspace Mobile",
+  "description": "A mobile-optimized version of the MZJ Workspace order management system, featuring portrait-mode card layouts for tables, full Firebase integration, and a sleek brown-beige aesthetic.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

@@ -1,0 +1,40 @@
+
+body {
+    font-family: 'Tajawal', sans-serif;
+    background-color: #fff8ef;
+    -webkit-tap-highlight-color: transparent;
+    margin: 0; padding: 0;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: #dcc3b2; border-radius: 10px; }
+
+input, select, textarea {
+    font-size: 16px !important;
+    appearance: none;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #3e2420;
+}
+
+.active-press:active {
+    transform: scale(0.96);
+    opacity: 0.8;
+}
+
+.mobile-modal {
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+footer, .fixed-nav {
+    padding-bottom: env(safe-area-inset-bottom);
+}
